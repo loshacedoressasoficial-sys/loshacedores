@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Los Hacedores | Mantenimiento y Reparación Industrial</title>
+    
+    <!-- META-INFORMACIÓN Y RECURSOS EXTERNOS -->
+    <meta name="description" content="Los Hacedores: Expertos en mantenimiento y reparación de electrodomésticos y equipos industriales.">
+    
+    <!-- Fuentes de Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- CONFIGURACIÓN DE TAILWIND -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand': {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        'dark': {
+                            900: '#050506',
+                            800: '#0a0a0c',
+                            700: '#111114',
+                            600: '#18181c',
+                            500: '#1f1f24',
+                        },
+                        'metal': {
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                        }
+                    },
+                    fontFamily: {
+                        'display': ['Space Grotesk', 'sans-serif'],
+                        'body': ['DM Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- ESTILOS CSS PERSONALIZADOS -->
+    <style>
+        /* 1. Variables Globales */
+        :root {
+            --primary: #059669;
+            --primary-light: #10b981;
+            --bg-dark: #050506;
+        }
+
+        /* 2. Estilos Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+
+        /* 3. Animaciones de Fondo */
+        .circuit-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; opacity: 0.15;
+        }
+        @keyframes pulse-node { 0%, 100% { opacity: 0.3; r: 3; } 50% { opacity: 1; r: 5; } }
+        .circuit-node { animation: pulse-node 3s ease-in-out infinite; }
+        
+        .floating-particle {
+            position: absolute; width: 4px; height: 4px;
+            background: var(--primary); border-radius: 50%; opacity: 0;
+            animation: float-up 8s ease-in-out infinite;
+        }
+        @keyframes float-up {
+            0% { opacity: 0; transform: translateY(100vh) scale(0); }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { opacity: 0; transform: translateY(-20vh) scale(1); }
+        }
+
+        /* 4. Header y Navegación */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(5, 5, 6, 0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(5, 150, 105, 0.1);
+            transition: all 0.4s ease;
+        }
+        .header.scrolled { background: rgba(5, 5, 6, 0.98); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
+        .logo-img { height: 50px; width: auto; transition: filter 0.3s; }
+        .logo-container:hover .logo-img { filter: brightness(1.2); }
+
+        .nav-link {
+            position: relative; font-family: 'Space Grotesk', sans-serif;
+            color: #9ca3af; transition: color 0.3s;
+        }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -4px; left: 0;
+            width: 0; height: 2px; background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover { color: var(--primary-light); }
+        .nav-link:hover::after { width: 100%; }
+
+        /* 5. Menú Móvil */
+        .menu-toggle span {
+            display: block; width: 20px; height: 2px; background: var(--primary);
+            margin: 3px 0; transition: all 0.3s ease; border-radius: 2px;
+        }
+        .menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+        .menu-toggle.active span:nth-child(2) { opacity: 0; transform: translateX(-10px); }
+        .menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+        
+        .mobile-menu {
+            position: fixed; top: 70px; left: 0; right: 0;
+            background: rgba(5, 5, 6, 0.98); backdrop-filter: blur(20px);
+            transform: translateY(-120%); opacity: 0; visibility: hidden;
+            transition: all 0.4s ease;
+            border-bottom: 1px solid rgba(5, 150, 105, 0.2);
+        }
+        .mobile-menu.active { transform: translateY(0); opacity: 1; visibility: visible; }
+
+        /* 6. Componentes */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #047857 100%);
+            color: white; font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 8px;
+            transition: all 0.3s ease; overflow: hidden;
+            border: none; cursor: pointer;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(5, 150, 105, 0.4); }
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white; font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600; padding: 1rem 2rem; border-radius: 12px;
+            display: inline-flex; align-items: center; gap: 0.75rem;
+            transition: all 0.3s ease; text-decoration: none;
+        }
+        .btn-whatsapp:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(37, 211, 102, 0.3); }
+
+        .service-card {
+            background: linear-gradient(145deg, rgba(17, 17, 20, 0.8), rgba(17, 17, 20, 0.4));
+            border: 1px solid rgba(5, 150, 105, 0.15); border-radius: 16px; padding: 2rem;
+            transition: all 0.4s ease; position: relative; overflow: hidden;
+        }
+        .service-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease;
+        }
+        .service-card:hover { transform: translateY(-8px); border-color: rgba(5, 150, 105, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .service-card:hover::before { transform: scaleX(1); }
+
+        /* 7. Animaciones de Scroll */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+        .reveal-delay-5 { transition-delay: 0.5s; }
+
+        /* 8. Estilos para Imágenes */
+        .about-image {
+            border-radius: 16px; overflow: hidden;
+            border: 1px solid rgba(5, 150, 105, 0.2);
+            transition: all 0.5s ease; position: relative;
+        }
+        .about-image::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(5,5,6,0.8) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        .about-image:hover { transform: scale(1.03); border-color: rgba(5, 150, 105, 0.5); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .about-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .about-image:hover img { transform: scale(1.1); }
+
+        /* 9. Utilidades */
+        .stat-number {
+            font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .specialty-tag {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 1rem; background: rgba(5, 150, 105, 0.1);
+            border: 1px solid rgba(5, 150, 105, 0.3); border-radius: 100px;
+            font-size: 0.875rem; color: var(--primary-light);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- FONDO ANIMADO -->
+    <div class="circuit-bg" aria-hidden="true">
+        <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
+                    <path d="M0 50 H40 M60 50 H100" stroke="#059669" stroke-width="1" fill="none" opacity="0.3"/>
+                    <path d="M50 0 V40 M50 60 V100" stroke="#059669" stroke-width="1" fill="none" opacity="0.3"/>
+                    <circle cx="50" cy="50" r="3" fill="#059669" class="circuit-node"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)"/>
+        </svg>
+    </div>
+    <div id="particles" class="fixed inset-0 pointer-events-none z-0" aria-hidden="true"></div>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <a href="#inicio" class="logo-container flex items-center">
+                    <img src="https://z-cdn-media.chatglm.cn/files/31d684f6-bfaa-4dd6-bca7-b7c84cd4bccf.png?auth_key=1871559939-ca17d1de89704acea323146fd7029730-0-f5ae4d04757917daaef69e3d8664e722" 
+                         alt="Los Hacedores Logo" class="logo-img">
+                </a>
+                
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="#inicio" class="nav-link">Inicio</a>
+                    <a href="#servicios" class="nav-link">Servicios</a>
+                    <a href="#nosotros" class="nav-link">Nosotros</a>
+                    <a href="#contacto" class="nav-link">Contacto</a>
+                    <a href="https://wa.me/573059387670" class="btn-primary" target="_blank" rel="noopener">Contactar</a>
+                </nav>
+                
+                <button class="menu-toggle md:hidden" id="menu-toggle" aria-label="Abrir menú">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- MENÚ MÓVIL -->
+    <nav id="mobile-menu" class="mobile-menu md:hidden">
+        <div class="px-6 py-4 flex flex-col gap-4">
+            <a href="#inicio" class="nav-link text-lg">Inicio</a>
+            <a href="#servicios" class="nav-link text-lg">Servicios</a>
+            <a href="#nosotros" class="nav-link text-lg">Nosotros</a>
+            <a href="#contacto" class="nav-link text-lg">Contacto</a>
+            <a href="https://wa.me/573059387670" class="btn-primary text-center mt-2" target="_blank">Contactar</a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section id="inicio" class="min-h-screen flex items-center relative z-10 pt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <span class="reveal specialty-tag mb-6">
+                        <svg class="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        Expertos Técnicos
+                    </span>
+                    
+                    <h1 class="reveal reveal-delay-1 font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                        Creamos, Construimos, <br>
+                        <span class="text-brand-400">Mejoramos y Reparamos</span>
+                    </h1>
+                    
+                    <p class="reveal reveal-delay-2 text-lg text-metal-400 mb-8 max-w-lg">
+                        Soluciones técnicas profesionales para electrodomésticos y equipos industriales. 
+                        Servicio rápido, garantizado y con técnicos certificados.
+                    </p>
+                    
+                    <div class="reveal reveal-delay-3 flex flex-wrap gap-4">
+                        <a href="https://wa.me/573059387670?text=Hola,%20necesito%20un%20servicio%20técnico" target="_blank" class="btn-whatsapp">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            Solicitar Servicio
+                        </a>
+                        <a href="#servicios" class="btn-primary bg-transparent border border-brand-600 hover:bg-brand-900/50">
+                            Ver Servicios
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Grid de tarjetas decorativas -->
+                <div class="hidden md:grid grid-cols-2 gap-4">
+                    
+                    <!-- Fila Superior -->
+                    <div class="service-card opacity-90">
+                        <div class="w-12 h-12 rounded-lg bg-brand-900/50 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M17 2l-5 5-5-5"/></svg>
+                        </div>
+                        <h3 class="font-display font-semibold text-lg">Electrodomésticos</h3>
+                        <p class="text-sm text-metal-500 mt-1">Línea blanca y marrón</p>
+                    </div>
+                    
+                    <div class="service-card opacity-90">
+                        <div class="w-12 h-12 rounded-lg bg-brand-900/50 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        </div>
+                        <h3 class="font-display font-semibold text-lg">Equipos Industriales</h3>
+                        <p class="text-sm text-metal-500 mt-1">Mantenimiento integral</p>
+                    </div>
+                    
+                    <!-- Fila Inferior -->
+                    <div class="service-card translate-y-4 opacity-90">
+                        <div class="w-12 h-12 rounded-lg bg-brand-900/50 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <h3 class="font-display font-semibold text-lg">Garantía Total</h3>
+                        <p class="text-sm text-metal-500 mt-1">Trabajos garantizados</p>
+                    </div>
+                    
+                    <div class="service-card translate-y-4 opacity-90">
+                        <div class="w-12 h-12 rounded-lg bg-brand-900/50 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <h3 class="font-display font-semibold text-lg">Respuesta Rápida</h3>
+                        <p class="text-sm text-metal-500 mt-1">Servicio en 24 horas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section id="servicios" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center mb-12">
+                <span class="reveal specialty-tag mb-4">Nuestros Servicios</span>
+                <h2 class="reveal reveal-delay-1 font-display text-3xl md:text-4xl font-bold">
+                    Soluciones <span class="text-brand-400">integrales</span>
+                </h2>
+            </div>
+
+            <div class="reveal reveal-delay-2 mb-16 max-w-5xl mx-auto">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-center">
+                    <div class="p-4 bg-dark-700/50 rounded-lg border border-dark-500 hover:border-brand-700 transition-colors">
+                        <p class="text-sm text-metal-300">Mantenimiento preventivo y correctivo</p>
+                    </div>
+                    <div class="p-4 bg-dark-700/50 rounded-lg border border-dark-500 hover:border-brand-700 transition-colors">
+                        <p class="text-sm text-metal-300">Reparación de equipos domésticos e industriales</p>
+                    </div>
+                    <div class="p-4 bg-dark-700/50 rounded-lg border border-dark-500 hover:border-brand-700 transition-colors">
+                        <p class="text-sm text-metal-300">Diagnóstico técnico especializado</p>
+                    </div>
+                    <div class="p-4 bg-dark-700/50 rounded-lg border border-dark-500 hover:border-brand-700 transition-colors">
+                        <p class="text-sm text-metal-300">Optimización y mejora de sistemas</p>
+                    </div>
+                    <div class="p-4 bg-dark-700/50 rounded-lg border border-dark-500 hover:border-brand-700 transition-colors">
+                        <p class="text-sm text-metal-300">Servicios técnicos personalizados</p>
+                    </div>
+                    <div class="p-4 bg-dark-700/50 rounded-lg border border-dark-500 hover:border-brand-700 transition-colors">
+                        <p class="text-sm text-metal-300">Soporte multitecnología</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div class="reveal service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M2 12h20"/><circle cx="8" cy="6" r="1"/><circle cx="16" cy="6" r="1"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Línea Blanca</h3>
+                    <p class="text-metal-400 text-sm mb-4">Reparación de neveras, lavadoras, secadoras, cocinas y más.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Neveras y congeladores</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Lavadoras y secadoras</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Cocinas y hornos</li>
+                    </ul>
+                </div>
+                
+                <div class="reveal reveal-delay-1 service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Refrigeración Industrial</h3>
+                    <p class="text-metal-400 text-sm mb-4">Mantenimiento de cámaras frigoríficas y sistemas comerciales.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Cámaras frigoríficas</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Cuartos fríos</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Vitriñas exhibidoras</li>
+                    </ul>
+                </div>
+                
+                <div class="reveal reveal-delay-2 service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Maquinaria Industrial</h3>
+                    <p class="text-metal-400 text-sm mb-4">Servicio técnico para plantas industriales y talleres.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Motores eléctricos</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Sistemas hidráulicos</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Tableros de control</li>
+                    </ul>
+                </div>
+                
+                <div class="reveal reveal-delay-3 service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Aire Acondicionado</h3>
+                    <p class="text-metal-400 text-sm mb-4">Instalación y mantenimiento de sistemas de climatización.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Splits y multisplits</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Sistemas VRV/VRF</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Mantenimiento preventivo</li>
+                    </ul>
+                </div>
+                
+                <div class="reveal reveal-delay-4 service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Electricidad</h3>
+                    <p class="text-metal-400 text-sm mb-4">Instalaciones eléctricas residenciales e industriales.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Tableros eléctricos</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Automatización</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Cableado estructurado</li>
+                    </ul>
+                </div>
+                
+                <div class="reveal reveal-delay-5 service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Mantenimiento Preventivo</h3>
+                    <p class="text-metal-400 text-sm mb-4">Planes personalizados para prolongar vida útil de equipos.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Inspecciones programadas</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Reportes detallados</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Planes a medida</li>
+                    </ul>
+                </div>
+
+                <div class="reveal service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Automatización Industrial</h3>
+                    <p class="text-metal-400 text-sm mb-4">Diseño e implementación de sistemas automatizados para líneas de producción.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Líneas de producción</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> PLC y controles</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Integración de sistemas</li>
+                    </ul>
+                </div>
+
+                <div class="reveal reveal-delay-1 service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                            <rect x="9" y="9" width="6" height="6"></rect>
+                            <line x1="9" y1="1" x2="9" y2="4"></line>
+                            <line x1="15" y1="1" x2="15" y2="4"></line>
+                            <line x1="9" y1="20" x2="9" y2="23"></line>
+                            <line x1="15" y1="20" x2="15" y2="23"></line>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Soluciones Electrónicas</h3>
+                    <p class="text-metal-400 text-sm mb-4">Reparación y mantenimiento de tarjetas electrónicas y circuitos complejos.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Tarjetas de control</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Variadores de frecuencia</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Fuentes de poder</li>
+                    </ul>
+                </div>
+
+                <div class="reveal reveal-delay-2 service-card">
+                    <div class="w-14 h-14 rounded-xl bg-dark-700 flex items-center justify-center mb-5 border border-dark-500">
+                        <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-xl mb-3 text-white">Instalación y Puesta en Marcha</h3>
+                    <p class="text-metal-400 text-sm mb-4">Montaje, configuración y puesta en operación de maquinaria nueva.</p>
+                    <ul class="space-y-2 text-sm text-metal-500">
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Montaje de equipos</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Calibración de sensores</li>
+                        <li class="flex items-center gap-2"><span class="text-brand-500">✓</span> Pruebas de funcionamiento</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- NOSOTROS -->
+    <section id="nosotros" class="py-24 relative z-10 bg-dark-800/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center mb-16">
+                <span class="reveal specialty-tag mb-4">Quiénes Somos</span>
+                <h2 class="reveal reveal-delay-1 font-display text-3xl md:text-4xl font-bold">
+                    Conoce a <span class="text-brand-400">Los Hacedores</span>
+                </h2>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12 items-start mb-16">
+                
+                <div class="reveal">
+                    <h3 class="font-display text-2xl font-semibold mb-4 text-white">Especialistas en soluciones técnicas</h3>
+                    <p class="text-metal-400 mb-4 leading-relaxed">
+                        En <strong class="text-white">Los Hacedores</strong> somos especialistas en reparación, mantenimiento y optimización de equipos domésticos e industriales, ofreciendo soluciones técnicas confiables, rápidas y totalmente personalizadas.
+                    </p>
+                    <p class="text-metal-400 mb-4 leading-relaxed">
+                        Nos caracterizamos por integrar experiencia técnica, herramientas profesionales y un enfoque práctico orientado a resultados. Atendemos desde equipos del hogar hasta sistemas industriales complejos, adaptándonos a los requerimientos específicos de cada cliente.
+                    </p>
+                    <p class="text-metal-400 mb-6 leading-relaxed">
+                        Trabajamos con múltiples tecnologías y brindamos servicios a la medida, asegurando eficiencia operativa, prolongación de la vida útil de los equipos y reducción de fallas.
+                    </p>
+                    
+                    <div class="pt-4 border-t border-dark-500">
+                        <p class="text-sm text-metal-500 mb-3">Marcas con las que trabajamos:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-dark-600 rounded text-sm text-metal-400">Samsung</span>
+                            <span class="px-3 py-1 bg-dark-600 rounded text-sm text-metal-400">LG</span>
+                            <span class="px-3 py-1 bg-dark-600 rounded text-sm text-metal-400">Whirlpool</span>
+                            <span class="px-3 py-1 bg-dark-600 rounded text-sm text-metal-400">Mabe</span>
+                            <span class="px-3 py-1 bg-dark-600 rounded text-sm text-metal-400">Carrier</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="reveal reveal-delay-2 grid grid-cols-2 gap-4">
+                    
+                    <div class="about-image h-64 relative group">
+                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Técnico trabajando en equipos industriales"
+                             class="w-full h-full object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 p-4 z-10">
+                            <span class="text-xs font-display text-white bg-brand-600/80 px-2 py-1 rounded">Industrial</span>
+                        </div>
+                    </div>
+                    
+                    <div class="about-image h-64 relative group">
+                        <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80" 
+                             alt="Reparación de electrodomésticos"
+                             class="w-full h-full object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 p-4 z-10">
+                            <span class="text-xs font-display text-white bg-brand-600/80 px-2 py-1 rounded">Doméstico</span>
+                        </div>
+                    </div>
+                    
+                    <div class="about-image h-48 relative group col-span-2">
+                        <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+                             alt="Herramientas técnicas profesionales"
+                             class="w-full h-full object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 p-4 z-10 flex justify-between items-end">
+                            <span class="text-xs font-display text-white bg-dark-900/80 px-2 py-1 rounded">Equipo Profesional</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MISIÓN Y VISIÓN -->
+            <div class="grid md:grid-cols-2 gap-8 mb-16">
+                <!-- Misión -->
+                <div class="reveal service-card bg-dark-800/60 border-l-4 border-l-brand-500">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-lg bg-brand-600/20 flex items-center justify-center border border-brand-600/30">
+                            <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="6"></circle>
+                                <circle cx="12" cy="12" r="2"></circle>
+                            </svg>
+                        </div>
+                        <h4 class="font-display text-xl font-semibold text-white">Nuestra Misión</h4>
+                    </div>
+                    <p class="text-metal-400 leading-relaxed text-sm mb-4">
+                        En Los Hacedores transformamos las necesidades técnicas de nuestros clientes en soluciones rápidas, precisas y a la medida. Nos especializamos en la reparación, mantenimiento y optimización de equipos domésticos e industriales, combinando experiencia, tecnología y compromiso para entregar resultados superiores desde la primera intervención.
+                    </p>
+                    <p class="text-metal-400 leading-relaxed text-sm">
+                        Nuestra prioridad es maximizar la satisfacción del cliente, reduciendo tiempos de falla, optimizando el rendimiento de sus equipos y protegiendo su inversión. Trabajamos para ser el aliado técnico confiable que responde cuando más se necesita y que siempre cumple lo que promete.
+                    </p>
+                </div>
+
+                <!-- Visión -->
+                <div class="reveal reveal-delay-1 service-card bg-dark-800/60 border-l-4 border-l-brand-400">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-lg bg-brand-600/20 flex items-center justify-center border border-brand-600/30">
+                            <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </div>
+                        <h4 class="font-display text-xl font-semibold text-white">Nuestra Visión</h4>
+                    </div>
+                    <p class="text-metal-400 leading-relaxed text-sm">
+                        Consolidarnos como una empresa líder en servicios técnicos multimarca y multitecnología, reconocida por nuestra calidad, innovación y capacidad de responder eficazmente a las necesidades del sector doméstico e industrial.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Estadísticas -->
+            <div class="border-t border-dark-500 pt-16">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="reveal p-6 bg-dark-700 rounded-xl border border-dark-500 text-center hover:border-brand-700 transition-colors">
+                        <div class="stat-number">15+</div>
+                        <p class="text-metal-400 text-sm mt-2">Años de experiencia</p>
+                    </div>
+                    <div class="reveal reveal-delay-1 p-6 bg-dark-700 rounded-xl border border-dark-500 text-center hover:border-brand-700 transition-colors">
+                        <div class="stat-number">5000+</div>
+                        <p class="text-metal-400 text-sm mt-2">Reparaciones</p>
+                    </div>
+                    <div class="reveal reveal-delay-2 p-6 bg-dark-700 rounded-xl border border-dark-500 text-center hover:border-brand-700 transition-colors">
+                        <div class="stat-number">98%</div>
+                        <p class="text-metal-400 text-sm mt-2">Satisfacción</p>
+                    </div>
+                    <div class="reveal reveal-delay-3 p-6 bg-dark-700 rounded-xl border border-dark-500 text-center hover:border-brand-700 transition-colors">
+                        <div class="stat-number">24h</div>
+                        <p class="text-metal-400 text-sm mt-2">Respuesta</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section id="contacto" class="py-24 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center mb-16">
+                <span class="reveal specialty-tag mb-4">Contacto</span>
+                <h2 class="reveal reveal-delay-1 font-display text-3xl md:text-4xl font-bold">
+                    Estamos para <span class="text-brand-400">ayudarte</span>
+                </h2>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-8">
+                
+                <div class="reveal p-8 bg-dark-700 rounded-2xl border border-dark-500 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-brand-600/10 rounded-full blur-3xl"></div>
+                    
+                    <h3 class="font-display text-xl font-semibold mb-6 relative z-10">Información</h3>
+                    
+                    <div class="mb-6 relative z-10">
+                        <p class="text-sm text-metal-500 mb-2">WhatsApp / Teléfono</p>
+                        <a href="https://wa.me/573059387670" class="text-2xl font-display font-semibold text-brand-400 hover:text-brand-300 transition-colors" target="_blank">
+                            +57 305 938 7670
+                        </a>
+                    </div>
+                    
+                    <div class="mb-8 relative z-10">
+                        <p class="text-sm text-metal-500 mb-2">Horario de Atención</p>
+                        <p class="text-white">Lunes a Sábado: 7:00 AM - 7:00 PM</p>
+                        <p class="text-metal-400 text-sm">Domingos: Emergencias</p>
+                    </div>
+                    
+                    <a href="https://wa.me/573059387670?text=Hola,%20necesito%20un%20técnico" target="_blank" class="btn-whatsapp w-full justify-center relative z-10">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Escribir por WhatsApp
+                    </a>
+                </div>
+                
+                <!-- Formulario Actualizado -->
+                <div class="reveal reveal-delay-1 p-8 bg-dark-700 rounded-2xl border border-dark-500">
+                    <h3 class="font-display text-xl font-semibold mb-6">Solicitar Cotización</h3>
+                    
+                    <form id="contact-form" class="space-y-4">
+                        <!-- Configuración Web3Forms -->
+                        <input type="hidden" name="access_key" value="ac8b835b-c351-44cb-aa89-64c68aa1d1c1">
+                        <input type="hidden" name="subject" value="Nueva Solicitud de Cotización - Los Hacedores">
+                        <input type="hidden" name="to" value="loshacedoressasoficial@gmail.com">
+                        <input type="checkbox" name="botcheck" class="hidden" style="display:none">
+                        
+                        <!-- Nombre y Teléfono -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="nombre" class="block text-sm text-metal-400 mb-2">Nombre</label>
+                                <input type="text" id="nombre" name="nombre" required class="w-full px-4 py-3 bg-dark-600 border border-dark-500 rounded-lg focus:border-brand-500 focus:outline-none text-white transition-colors" placeholder="Tu nombre">
+                            </div>
+                            <div>
+                                <label for="telefono" class="block text-sm text-metal-400 mb-2">Teléfono</label>
+                                <input type="tel" id="telefono" name="telefono" required class="w-full px-4 py-3 bg-dark-600 border border-dark-500 rounded-lg focus:border-brand-500 focus:outline-none text-white transition-colors" placeholder="Tu teléfono">
+                            </div>
+                        </div>
+
+                        <!-- Servicio -->
+                        <div>
+                            <label for="servicio" class="block text-sm text-metal-400 mb-2">Servicio</label>
+                            <select id="servicio" name="servicio" required class="w-full px-4 py-3 bg-dark-600 border border-dark-500 rounded-lg focus:border-brand-500 focus:outline-none text-white transition-colors">
+                                <option value="">Selecciona...</option>
+                                <option value="Linea Blanca">Línea Blanca</option>
+                                <option value="Refrigeracion">Refrigeración Industrial</option>
+                                <option value="Industrial">Maquinaria Industrial</option>
+                                <option value="Aire">Aire Acondicionado</option>
+                                <option value="Electricidad">Electricidad</option>
+                                <option value="Mantenimiento">Mantenimiento Preventivo</option>
+                            </select>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div>
+                            <label for="direccion" class="block text-sm text-metal-400 mb-2">Dirección</label>
+                            <input type="text" id="direccion" name="direccion" required class="w-full px-4 py-3 bg-dark-600 border border-dark-500 rounded-lg focus:border-brand-500 focus:outline-none text-white transition-colors" placeholder="Tu dirección">
+                        </div>
+
+                        <!-- Ciudad y Departamento -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="ciudad" class="block text-sm text-metal-400 mb-2">Ciudad</label>
+                                <input type="text" id="ciudad" name="ciudad" required class="w-full px-4 py-3 bg-dark-600 border border-dark-500 rounded-lg focus:border-brand-500 focus:outline-none text-white transition-colors" placeholder="Ciudad">
+                            </div>
+                            <div>
+                                <label for="departamento" class="block text-sm text-metal-400 mb-2">Departamento</label>
+                                <input type="text" id="departamento" name="departamento" required class="w-full px-4 py-3 bg-dark-600 border border-dark-500 rounded-lg focus:border-brand-500 focus:outline-none text-white transition-colors" placeholder="Departamento">
+                            </div>
+                        </div>
+                        
+                        <!-- Mensaje -->
+                        <div>
+                            <label for="mensaje" class="block text-sm text-metal-400 mb-2">Mensaje</label>
+                            <textarea id="mensaje" name="mensaje" rows="3" required class="w-full px-4 py-3 bg-dark-600 border border-dark-500 rounded-lg focus:border-brand-500 focus:outline-none text-white resize-none transition-colors" placeholder="Describe tu necesidad..."></textarea>
+                        </div>
+                        
+                        <button type="submit" id="submit-btn" class="btn-primary w-full justify-center">Enviar Solicitud</button>
+                        
+                        <!-- Estado del envío -->
+                        <div id="result" class="text-center text-sm mt-2 hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-12 border-t border-dark-600 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <img src="https://z-cdn-media.chatglm.cn/files/31d684f6-bfaa-4dd6-bca7-b7c84cd4bccf.png?auth_key=1871559939-ca17d1de89704acea323146fd7029730-0-f5ae4d04757917daaef69e3d8664e722" alt="Los Hacedores" class="h-10 mb-4 opacity-80">
+                    <p class="text-metal-500 text-sm">Creamos, construimos, mejoramos y reparamos.</p>
+                </div>
+                <div>
+                    <h4 class="font-display font-semibold mb-4 text-sm uppercase tracking-wider text-metal-400">Navegación</h4>
+                    <nav class="space-y-2">
+                        <a href="#inicio" class="block text-metal-500 hover:text-brand-400 text-sm transition-colors">Inicio</a>
+                        <a href="#servicios" class="block text-metal-500 hover:text-brand-400 text-sm transition-colors">Servicios</a>
+                        <a href="#nosotros" class="block text-metal-500 hover:text-brand-400 text-sm transition-colors">Nosotros</a>
+                        <a href="#contacto" class="block text-metal-500 hover:text-brand-400 text-sm transition-colors">Contacto</a>
+                    </nav>
+                </div>
+                <div>
+                    <h4 class="font-display font-semibold mb-4 text-sm uppercase tracking-wider text-metal-400">Contacto</h4>
+                    <p class="text-metal-500 text-sm mb-1">WhatsApp: +57 305 938 7670</p>
+                    <p class="text-metal-500 text-sm">Lun - Sáb: 7:00 AM - 7:00 PM</p>
+                </div>
+            </div>
+            <div class="border-t border-dark-600 pt-8 text-center">
+                <p class="text-metal-600 text-xs">2024 Los Hacedores. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        const CONFIG = { 
+            whatsappNumber: '573059387670',
+            email: 'loshacedoressasoficial@gmail.com'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initParticles();
+            initScrollReveal();
+            initMobileMenu();
+            initHeader();
+            initForm();
+        });
+
+        function initParticles() {
+            const container = document.getElementById('particles');
+            if (!container) return;
+            const count = window.innerWidth < 768 ? 15 : 30;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'floating-particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 8 + 's';
+                p.style.animationDuration = (6 + Math.random() * 4) + 's';
+                container.appendChild(p);
+            }
+        }
+
+        function initScrollReveal() {
+            const reveals = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            reveals.forEach(el => observer.observe(el));
+        }
+
+        function initMobileMenu() {
+            const toggle = document.getElementById('menu-toggle');
+            const menu = document.getElementById('mobile-menu');
+            if (!toggle || !menu) return;
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+                menu.classList.toggle('active');
+            });
+            menu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    toggle.classList.remove('active');
+                    menu.classList.remove('active');
+                });
+            });
+        }
+
+        function initHeader() {
+            const header = document.getElementById('header');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) header.classList.add('scrolled');
+                else header.classList.remove('scrolled');
+            });
+        }
+
+        // Formulario funcional con Web3Forms
+        function initForm() {
+            const form = document.getElementById('contact-form');
+            const result = document.getElementById('result');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (!form) return;
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'Enviando...';
+                result.classList.remove('hidden', 'text-brand-400', 'text-red-500');
+                result.classList.add('text-metal-400');
+                result.innerHTML = 'Enviando solicitud...';
+
+                const formData = new FormData(form);
+                
+                const requiredFields = ['nombre', 'telefono', 'servicio', 'direccion', 'ciudad', 'departamento', 'mensaje'];
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    if (!formData.get(field)) {
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    result.classList.remove('text-metal-400');
+                    result.classList.add('text-red-500');
+                    result.innerHTML = 'Por favor completa todos los campos.';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Enviar Solicitud';
+                    return;
+                }
+
+                const object = Object.fromEntries(formData);
+                const json = JSON.stringify(object);
+
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: json
+                })
+                .then(async (response) => {
+                    let json = await response.json();
+                    if (response.status == 200) {
+                        result.classList.remove('text-metal-400');
+                        result.classList.add('text-brand-400');
+                        result.innerHTML = "Solicitud enviada correctamente. Nos pondremos en contacto pronto.";
+                        form.reset();
+                    } else {
+                        console.log(response);
+                        result.classList.remove('text-metal-400');
+                        result.classList.add('text-red-500');
+                        result.innerHTML = json.message || "Hubo un error al enviar. Intenta de nuevo.";
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    result.classList.remove('text-metal-400');
+                    result.classList.add('text-red-500');
+                    result.innerHTML = "Error de conexión. Verifica tu acceso a internet.";
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Enviar Solicitud';
+                    setTimeout(() => {
+                        result.classList.add('hidden');
+                    }, 5000);
+                });
+            });
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href === '#') return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>
